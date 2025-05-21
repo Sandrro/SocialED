@@ -62,6 +62,7 @@ and [PyTorch](https://pytorch.org/), and follows the API design of [PyOD](https:
 and [PyGOD](https://github.com/pygod-team/pygod).
 See examples below for detecting outliers with SocialED in 7 lines!
 
+
 SocialED plays a crucial role in various downstream applications, including:
 
 * Crisis management
