@@ -114,7 +114,7 @@ Alternatively, you could clone and run setup.py file:
 .. code-block:: bash
 
     # Set up the environment
-    conda create -n SocialED python=3.8
+    conda create -n SocialED python=3.11
     conda activate SocialED
 
     # Installation
@@ -125,7 +125,7 @@ Alternatively, you could clone and run setup.py file:
 
 **Required Dependencies**\ :
 
-* python>=3.8
+* python>=3.8,<3.12  (tested with Python 3.11)
 * numpy>=1.24.3
 * scikit-learn>=1.2.2
 * scipy>=1.10.1
@@ -253,7 +253,7 @@ Below is a summary of all datasets supported by SocialED:
 
 ### 🔧 Dependencies and Technology Stack
 
-SocialED is compatible with Python 3.8 and above, and leverages well-established deep learning frameworks like PyTorch and Hugging Face Transformers for efficient model training and inference, supporting both CPU and GPU environments. In addition to these core frameworks, SocialED also integrates NumPy, SciPy, and scikit-learn for data manipulation, numerical operations, and machine learning tasks, ensuring versatility and performance across a range of workflows.
+SocialED is compatible with Python 3.8 through 3.11, and leverages well-established deep learning frameworks like PyTorch and Hugging Face Transformers for efficient model training and inference, supporting both CPU and GPU environments. In addition to these core frameworks, SocialED also integrates NumPy, SciPy, and scikit-learn for data manipulation, numerical operations, and machine learning tasks, ensuring versatility and performance across a range of workflows.
 
 ### 🔄 Unified API Design
 
