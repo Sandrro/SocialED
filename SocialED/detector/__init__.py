@@ -18,7 +18,7 @@ from .uclsed import UCLSED
 from .rplmsed import RPLMSED
 from .hisevent import HISEvent
 from .adpsemevent import ADPSEMEvent
-from .hypersed import HyperSED
+from .Hypersed import HyperSED
 # List of all classes to be exported
 __all__ = [
     "LDA",
