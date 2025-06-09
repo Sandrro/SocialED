@@ -16,7 +16,7 @@ Alternatively, you could clone and run setup.py file:
 .. code-block:: bash
 
     # Set up the environment
-    conda create -n SocialED python=3.8
+    conda create -n SocialED python=3.11
     conda activate SocialED
 
     # Installation
@@ -27,7 +27,7 @@ Alternatively, you could clone and run setup.py file:
 
 **Required Dependencies**\ :
 
-* python>=3.8
+* python>=3.8,<3.12 (tested with Python 3.11)
 * numpy>=1.24.3
 * scikit-learn>=1.2.2
 * scipy>=1.10.1
