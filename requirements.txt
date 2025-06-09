@@ -29,8 +29,8 @@ cymem==2.0.8
 Cython==0.29.37
 datasets==3.0.1
 decorator==5.1.1
-dgl==0.6.0
-dgl-cu110==0.6.1
+dgl>=0.6.0
+# GPU-enabled builds can be installed separately if desired.
 dill==0.3.8
 docopt==0.6.2
 docutils==0.20.1
