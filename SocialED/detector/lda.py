@@ -114,7 +114,16 @@ class LDA:
     def fit(self):
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
 
-        train_df, test_df = train_test_split(self.df, test_size=0.2, random_state=self.random_state)
+        if len(self.df) < 2:
+            logging.warning(
+                "Not enough samples (%d) for train/test split; using full data for both.",
+                len(self.df))
+            train_df = self.df.copy()
+            test_df = self.df.copy()
+        else:
+            train_df, test_df = train_test_split(
+                self.df, test_size=0.2, random_state=self.random_state)
+
         self.train_df = train_df
         self.test_df = test_df
         train_corpus, train_dictionary = self.create_corpus(train_df, 'processed_text')
@@ -191,5 +200,22 @@ class LDA:
             f.write(f"Adjusted Mutual Information (AMI): {ami}\n")
             f.write(f"Adjusted Rand Index (ARI): {ari}\n")
             f.write("\n")  # Add a newline for better readability
+
+    def detection_by_day(self):
+        """Run detection separately for each day."""
+        all_preds = []
+        all_truths = []
+        original_df = self.dataset.copy()
+        df = self.dataset.copy()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        for day in sorted(df['created_at'].dt.date.unique()):
+            self.dataset = df[df['created_at'].dt.date == day].reset_index(drop=True)
+            self.preprocess()
+            self.fit()
+            gts, preds = self.detection()
+            all_preds.extend(preds)
+            all_truths.extend(gts)
+        self.dataset = original_df
+        return all_truths, all_preds
 
 

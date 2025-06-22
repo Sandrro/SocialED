@@ -246,6 +246,23 @@ class BiLSTM:
         ari = metrics.adjusted_rand_score(ground_truths, predictions)
         print(f"Adjusted Rand Index (ARI): {ari}")
 
+    def detection_by_day(self):
+        """Run detection on each day separately."""
+        all_preds = []
+        all_truths = []
+        original_df = self.dataset.copy()
+        df = self.dataset.copy()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        for day in sorted(df['created_at'].dt.date.unique()):
+            self.dataset = df[df['created_at'].dt.date == day].reset_index(drop=True)
+            self.preprocess()
+            self.fit()
+            gts, preds = self.detection()
+            all_preds.extend(preds)
+            all_truths.extend(gts)
+        self.dataset = original_df
+        return all_truths, all_preds
+
     def run_train(self, epochs, model, train_iterator, test_iterator, optimizer, loss_func):
         """
         Run the training and evaluation process for the BiLSTM model.

@@ -108,7 +108,9 @@ class HCRC:
 
                  # 设备相关参数
                  device: int = 0):
-        self.dataset = dataset.load_data()
+        # keep the dataset loader and preloaded dataframe
+        self.dataset = dataset
+        self.data = dataset.load_data()
         # 文件路径相关参数
         self.file_path = file_path
         self.result_path = result_path
@@ -139,7 +141,8 @@ class HCRC:
 
     def detection(self):
         args=self
-        unique_dates = sorted(self.dataset['created_at'].dt.date.unique())
+        df = self.data
+        unique_dates = sorted(df['created_at'].dt.date.unique())
         for i, day in enumerate(unique_dates):
             print("************Message Block "+str(i)+" start! ************")
             #Node-level learning
@@ -171,6 +174,10 @@ class HCRC:
         ground_truths = all_label
 
         return predictions, ground_truths
+
+    def detection_by_day(self):
+        """Compatibility helper mirroring :meth:`detection`."""
+        return self.detection()
 
     def evaluate(self, predictions, ground_truths):
         print("************Evaluation start! ************")

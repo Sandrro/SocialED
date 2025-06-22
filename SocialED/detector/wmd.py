@@ -204,6 +204,23 @@ class WMD:
             f.write(f"Adjusted Rand Index (ARI): {ari}\n")
             f.write("\n")
 
+    def detection_by_day(self):
+        """Run detection separately for each day."""
+        all_preds = []
+        all_truths = []
+        original_df = self.dataset.copy()
+        df = self.dataset.copy()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        for day in sorted(df['created_at'].dt.date.unique()):
+            self.dataset = df[df['created_at'].dt.date == day].reset_index(drop=True)
+            self.preprocess()
+            self.fit()
+            gts, preds = self.detection()
+            all_preds.extend(preds)
+            all_truths.extend(gts)
+        self.dataset = original_df
+        return all_truths, all_preds
+
 # 新增：计算单个文档的相似度
 def process_document(doc, instance, train_df, threshold, num_best):
     sims = instance[doc]
