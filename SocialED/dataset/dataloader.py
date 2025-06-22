@@ -138,7 +138,30 @@ class DatasetLoader:
             str: The name of the dataset.
         """
         return self.dataset
-    
+
+
+    def slice_by_day(self, df=None):
+        """Split dataset into daily slices.
+
+        Parameters
+        ----------
+        df : pandas.DataFrame, optional
+            DataFrame to slice. If ``None`` use ``load_data()``.
+
+        Returns
+        -------
+        list of pandas.DataFrame
+            List with a DataFrame for each day sorted chronologically.
+        """
+        if df is None:
+            df = self.load_data()
+        df = df.copy()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        day_groups = []
+        for day in sorted(df['created_at'].dt.date.unique()):
+            day_groups.append(df[df['created_at'].dt.date == day].reset_index(drop=True))
+        return day_groups
+
 
 
     def get_dataset_info(self):
