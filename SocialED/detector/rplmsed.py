@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 # encoding: utf-8
 import gc
+import pandas as pd
 import torch.optim as optim
 from ignite.contrib.handlers import ProgressBar
 from ignite.engine import Engine, Events
@@ -198,6 +199,24 @@ class RPLMSED:
         print(f"Model Adjusted Mutual Information (AMI): {ami}")
         print(f"Model Normalized Mutual Information (NMI): {nmi}")
         return ars, ami, nmi
+
+    def detection_by_day(self):
+        """Run detection per-day."""
+        all_preds = []
+        all_truths = []
+        df = self.dataset.load_data()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        original_loader = self.dataset.load_data
+        for day in sorted(df['created_at'].dt.date.unique()):
+            subset = df[df['created_at'].dt.date == day].reset_index(drop=True)
+            self.dataset.load_data = lambda subset=subset: subset
+            self.preprocess()
+            self.fit()
+            gts, preds = self.detection()
+            all_preds.extend(preds)
+            all_truths.extend(gts)
+        self.dataset.load_data = original_loader
+        return all_truths, all_preds
 
 
 

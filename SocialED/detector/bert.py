@@ -138,5 +138,22 @@ class BERT:
 
         return ari, ami, nmi
 
+    def detection_by_day(self):
+        """Run detection separately for each day in the dataset."""
+        all_preds = []
+        all_truths = []
+        original_df = self.dataset.copy()
+        df = self.dataset.copy()
+        df['created_at'] = pd.to_datetime(df['created_at'])
+        for day in sorted(df['created_at'].dt.date.unique()):
+            self.dataset = df[df['created_at'].dt.date == day].reset_index(drop=True)
+            self.preprocess()
+            self.fit()
+            gts, preds = self.detection()
+            all_preds.extend(preds)
+            all_truths.extend(gts)
+        self.dataset = original_df
+        return all_truths, all_preds
+
 
 
