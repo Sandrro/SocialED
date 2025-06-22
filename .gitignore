@@ -1,7 +1,4 @@
 *.psd filter=lfs diff=lfs merge=lfs -text
 socialED/detector/data/
-# игнорим все __pycache__ во всех подпапках
 **/__pycache__/
-
-# игнорим байт-коды Python
 *.py[cod]

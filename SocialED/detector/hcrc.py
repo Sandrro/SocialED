@@ -139,7 +139,8 @@ class HCRC:
 
     def detection(self):
         args=self
-        for i in range(22):
+        unique_dates = sorted(self.dataset['created_at'].dt.date.unique())
+        for i, day in enumerate(unique_dates):
             print("************Message Block "+str(i)+" start! ************")
             #Node-level learning
             embedder_N = Node_ModelTrainer(self,i)
@@ -1610,42 +1611,80 @@ def get_data(message_num,start,tweet_sum,save_path):
     dict_graph['y'] = true_y
     return dict_graph
 
-def getData(args,M_num):  #construct an entire graph within a block
-#     print(time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())))
-    M =[20254,28976,30467,32302,34312,36146,37422,42700,44260,45623,46719,
-        47951,51188,53160,56116,58665,59575,62251,64138,65537,66430,68840]  
+# def getData(args, M_num):
+#     """
+#     Строим ровно один граф на все доступные твиты из Event2012.
+#     """
+#     # 1) Загружаем полный DataFrame, сортируем и узнаём длину
+#     df = Event2012().load_data().sort_values('created_at').reset_index(drop=True)
+#     total = len(df)
 
-    if M_num == 0:
-        num = 0
-        size = 500
-    elif M_num == 1:
-        num = M[M_num-1]
-        size = 500
-    elif M[M_num]-M[M_num-1]>2000:
-        num = M[M_num-1]
-        size = 1000
-    else:
-        num = M[M_num-1]
-        size = M[M_num]-M[M_num-1]
-    data = []
-    i = M_num
-    j = 0
+#     # 2) Один вызов get_data: от 0 до total
+#     print(f"Building full graph for {total} tweets (block {M_num})…")
+#     graph_dict = get_data(
+#         message_num=M_num,
+#         start=0,
+#         tweet_sum=total,
+#         save_path=args.file_path
+#     )
 
-    while 1:
-        if (num+size)>=M[i]:
-            tmp = get_data(i, num ,M[i], args.file_path)
-            data.append(tmp)
-            break
-        else:
-            tmp = get_data(i, num, num+size, args.file_path)
-            data.append(tmp)
-            j = j + 1
-            print("***************Block "+str(j)+" is done.****************")
-            num = num+size
-    
+#     # 3) Сохраняем и возвращаем список из одного элемента
+#     data = [graph_dict]
+#     save_data(data, args.file_path, M_num)
+#     return data
 
-    save_data(data, args.file_path, M_num)
-    return data
+def getData(args, M_num):
+    """
+    Строим графи-порции по ежедневным срезам всего Event2012
+    и сохраняем их и для Node-, и для Graph-уровня.
+    """
+
+    # 1) Загружаем весь DataFrame
+    df = Event2012().load_data().sort_values('created_at').reset_index(drop=True)
+    df['date'] = df['created_at'].dt.date
+    unique_dates = sorted(df['date'].unique())
+
+    all_graphs = []
+    for day_idx, day in enumerate(unique_dates):
+        day_df = df[df['date'] == day]
+        start = day_df.index.min()
+        end   = day_df.index.max() + 1
+
+        print(f"[getData] Building graph for {day} ({len(day_df)} tweets)…")
+        gdict = get_data(
+            message_num=day_idx,
+            start=start,
+            tweet_sum=end,
+            save_path=args.file_path
+        )
+        all_graphs.append(gdict)
+
+    # 2) Сохраняем pickled версии для Node-уровня
+    save_data(all_graphs, args.file_path, M_num)
+
+    # 3) Готовим папку для GCL-data
+    gcl_dir = os.path.join(args.file_path, 'GCL-data')
+    os.makedirs(gcl_dir, exist_ok=True)
+
+    # 4) Сохраняем numpy-файлы по шаблону message_block_{i}.npy
+    for idx, gdict in enumerate(all_graphs):
+        # Переупакуем под формат get_Graph_Dataset
+        block = {
+            'X':            gdict['x'],
+            'x1':           gdict['x1'],
+            'x2':           gdict['x2'],
+            'edge_index':   gdict['edge_index'],
+            'edge_index1':  gdict['edge_index1'],
+            'edge_index2':  gdict['edge_index2'],
+            'label':        gdict['y'],
+        }
+        np.save(
+            os.path.join(gcl_dir, f'message_block_{idx}.npy'),
+            np.array([block], dtype=object),
+            allow_pickle=True
+        )
+
+    return all_graphs
 
 def save_data(data, save_path, M_num):
     os.makedirs(save_path, exist_ok=True)
@@ -1693,7 +1732,7 @@ def get_Node_Dataset(args,message_number):
         # 现在你可以使用 data 进行进一步操作
     else:
         print(f"No data file found at {file_path}")
-        datas = getData(message_number)
+        datas = getData(args, message_number)
     
     dataset = []
     labels = []
