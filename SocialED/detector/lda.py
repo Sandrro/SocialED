@@ -114,7 +114,16 @@ class LDA:
     def fit(self):
         os.makedirs(os.path.dirname(self.model_path), exist_ok=True)
 
-        train_df, test_df = train_test_split(self.df, test_size=0.2, random_state=self.random_state)
+        if len(self.df) < 2:
+            logging.warning(
+                "Not enough samples (%d) for train/test split; using full data for both.",
+                len(self.df))
+            train_df = self.df.copy()
+            test_df = self.df.copy()
+        else:
+            train_df, test_df = train_test_split(
+                self.df, test_size=0.2, random_state=self.random_state)
+
         self.train_df = train_df
         self.test_df = test_df
         train_corpus, train_dictionary = self.create_corpus(train_df, 'processed_text')
