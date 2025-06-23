@@ -1588,21 +1588,18 @@ def get_data(message_num,start,tweet_sum,save_path):
     true_y = torch.tensor(list(ini_df['event_id']))
 
     drop_percent = 0.2
+    drop_total = int(len(edge_index1[0]) * drop_percent)
     i = 0
-    while 1:
-        if i >= len(G.edges)*drop_percent:
-            break
-        m1 = random.randint(0, len(edge_index1[0])-1)
-        m2 = random.randint(0, len(edge_index2[0])-1)
-        if m1==m2:
+    while i < drop_total and len(edge_index1[0]) > 0 and len(edge_index2[0]) > 0:
+        m1 = random.randint(0, len(edge_index1[0]) - 1)
+        m2 = random.randint(0, len(edge_index2[0]) - 1)
+        if m1 == m2:
             continue
-        else:
-            del edge_index1[0][m1]
-            del edge_index1[1][m1]
-            del edge_index2[0][m2]
-            del edge_index2[1][m2]
-    
-        i = i + 1
+        del edge_index1[0][m1]
+        del edge_index1[1][m1]
+        del edge_index2[0][m2]
+        del edge_index2[1][m2]
+        i += 1
     edge_index = torch.tensor(edge_index)
     edge_index1 = torch.tensor(edge_index1)
     edge_index2 = torch.tensor(edge_index2)
